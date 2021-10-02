@@ -1,5 +1,3 @@
-local pretty = require "cc.pretty"
-
 local tagToExport = "minecraft:leaves"
 local bridge = peripheral.find("rsBridge")
 local outputChest  = peripheral.wrap("right")
