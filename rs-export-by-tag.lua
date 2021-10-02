@@ -1,36 +1,63 @@
-local tagToExport = "minecraft:leaves"
 local bridge = peripheral.find("rsBridge")
+local filterChest  = peripheral.wrap("top")
 local outputChest  = peripheral.wrap("right")
 
-local function includes(val, tbl)
-    for i, row in ipairs(tbl) do
-        if row == val then
-            return true
+local function includes(needles, haystack)
+    for _, a in ipairs(haystack) do
+        for _, b in ipairs(needles) do
+            if a == b then
+                return true
+            end
         end
     end
     return false
 end
 
-local items = bridge.listItems()
-for i, item in ipairs(items) do
-    if item["tags"] and includes(tagToExport, item["tags"]) then
-        if #outputChest.list() >= outputChest.size() then
-            print("output chest full");
-            break
+local function getTagsFromFilterChest()
+    local hash = {}
+    for slot, item in pairs(filterChest.list()) do
+        local itemDetails = filterChest.getItemDetail(slot)
+        for tag, _ in pairs(itemDetails["tags"]) do
+            hash[tag] = true
         end
-        local count = 64
-        if not item["amount"] then
-            count = 1
-        elseif item["amount"] < 64 then
-            count = item["amount"]
+    end
+    local tags = {}
+    for tag, _ in pairs(hash) do
+        tags[#tags + 1] = tag
+    end
+    return tags
+end
+
+local function exportFromRS()
+    local filterTags = getTagsFromFilterChest()
+    local items = bridge.listItems()
+    for i, item in ipairs(items) do
+        if item["tags"] and includes(filterTags, item["tags"]) then
+            if #outputChest.list() >= outputChest.size() then
+                print("output chest full");
+                break
+            end
+            local count = 64
+            if not item["amount"] then
+                count = 1
+            elseif item["amount"] < 64 then
+                count = item["amount"]
+            end
+            print("exporting " .. item["displayName"] .. " x " .. count)
+            bridge.exportItemToPeripheral({
+                name=item["name"],
+                count=count,
+                nbt=item['nbt']
+            }, peripheral.getName(outputChest))
         end
-        print("exporting " .. item["displayName"] .. " x " .. count)
-        bridge.exportItemToPeripheral({
-            name=item["name"],
-            count=count,
-            nbt=item['nbt']
-        }, peripheral.getName(outputChest))
     end
 end
 
-print("all done")
+while true do
+    print("waiting for redstone")
+    local event = os.pullEvent("redstone")
+    if redstone.getInput("front") then
+        exportFromRS()
+        print("all done")
+    end
+end
