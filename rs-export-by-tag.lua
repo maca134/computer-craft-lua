@@ -1,4 +1,4 @@
-local tagToExport = "forge:armor"
+local tagToExport = "forge:weapon"
 
 local bridge = peripheral.find("rsBridge")
 local outputChest  = peripheral.wrap("right")
@@ -19,6 +19,7 @@ for i, item in ipairs(items) do
             print("output chest full");
             break
         end
+        print("exporting " .. item["displayName"])
         bridge.exportItemToPeripheral(item, peripheral.getName(outputChest))
     end
 end
