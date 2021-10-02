@@ -1,3 +1,5 @@
+local pretty = require "cc.pretty"
+
 local bridge = peripheral.find("rsBridge")
 local filterChest  = peripheral.wrap("top")
 local outputChest  = peripheral.wrap("right")
@@ -44,20 +46,29 @@ local function exportFromRS()
                 count = item["amount"]
             end
             print("exporting " .. item["displayName"] .. " x " .. count)
-            bridge.exportItemToPeripheral({
+            pretty.print(pretty.pretty(item))
+            pretty.print(pretty.pretty({
                 name=item["name"],
                 count=count,
-                nbt=item['nbt']
-            }, peripheral.getName(outputChest))
+                nbt=item['nbt'] or {}
+            }))
+            break
+            --bridge.exportItemToPeripheral({
+            --    name=item["name"],
+            --    count=count,
+            --    nbt=item['nbt'] or {}
+            --}, peripheral.getName(outputChest))
         end
     end
 end
 
-while true do
-    print("waiting for redstone")
-    local event = os.pullEvent("redstone")
-    if redstone.getInput("front") then
-        exportFromRS()
-        print("all done")
-    end
-end
+exportFromRS()
+
+-- while true do
+--     print("waiting for redstone")
+--     local event = os.pullEvent("redstone")
+--     if redstone.getInput("front") then
+--         exportFromRS()
+--         print("all done")
+--     end
+-- end
