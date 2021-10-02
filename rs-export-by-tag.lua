@@ -15,6 +15,10 @@ end
 local items = bridge.listItems()
 for i, item in ipairs(items) do
     if item["tags"] and includes(tagToExport, item["tags"]) then
+        if #outputChest.list() >= outputChest.size() then
+            print("output chest full");
+            break
+        end
         bridge.exportItemToPeripheral(item, peripheral.getName(outputChest))
     end
 end
